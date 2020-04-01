@@ -1,0 +1,47 @@
+image: node:12-alpine
+
+cache: &cache
+  key: '$CI_COMMIT_REF_SLUG'
+  paths:
+    - node_modules/
+
+stages:
+  - install
+  - test
+
+install:
+  stage: install
+  script:
+    - yarn install
+
+eslint:
+  stage: test
+  before_script:
+    - yarn install
+  script:
+    - yarn lint
+  cache:
+    <<: *cache
+    policy: pull
+
+audit:
+  stage: test
+  script:
+    - yarn audit
+  allow_failure: true
+  cache:
+    policy: pull
+
+jest:
+  stage: test
+  before_script:
+    - yarn install
+  script:
+    - yarn test
+  cache:
+    <<: *cache
+    policy: pull
+  artifacts:
+    name: 'coverage-$CI_COMMIT_REF_SLUG'
+    paths:
+      - coverage/
